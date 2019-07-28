@@ -18,4 +18,4 @@ hw_networks = [net for net in networks if net['type'] != "systems manager"]
 for network in hw_networks:
     devices = meraki.getnetworkdevices(config.api_key,network['id'],suppressprint=True)
     for device in devices:
-        print(device['serial'])
+        
