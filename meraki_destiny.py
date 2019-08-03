@@ -90,14 +90,10 @@ def main():
                                server_settings["password"],
                                server_settings["database"])
 
-        print(data)
-        # logging.info("Got device data from server!\n%s", data)
-        # if data is None:
-        #     logging.error("No data")
+        logging.debug("Got device data from server!\n%s", data)
+        if data is None:
+            logging.error("No data")
 
-        # barcode = data["CopyBarcode"]
-        # if barcode == "" or barcode is None:
-        #     logging.error("No barcode data")
-        # sys.exit(0)
+        sys.exit(0)
 if __name__ == '__main__':
     main()
