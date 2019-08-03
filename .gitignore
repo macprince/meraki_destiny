@@ -1,5 +1,4 @@
 
-config.py
 .DS_Store
 
 # Python Defaults
@@ -36,3 +35,5 @@ wheels/
 *.manifest
 *.spec
 *.tar
+config.json
+*.log
