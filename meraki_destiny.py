@@ -80,6 +80,12 @@ def get_device_data(serials, host, user, password, db):
 
     return devicedata
 
+def write_to_meraki(data):
+    for device in data:
+        serial = device['SerialNumber']
+        asset_tag = device['CopyBarcode']
+        print(serial, asset_tag,"")
+
 def main():
         serials = get_serials_from_dashboard()
 
@@ -93,6 +99,9 @@ def main():
         logging.debug("Got device data from server!\n%s", data)
         if data is None:
             logging.error("No data")
+
+        write_to_meraki(data)
+
 
         sys.exit(0)
 if __name__ == '__main__':
