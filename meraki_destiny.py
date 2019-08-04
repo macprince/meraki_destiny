@@ -11,7 +11,7 @@ import os.path
 import sys
 # Custom Imports
 import pytds
-from meraki import meraki
+import meraki
 
 # Set up argparse
 parser = argparse.ArgumentParser()
@@ -92,7 +92,7 @@ def write_to_meraki(network_id, data):
         for device in data:
             serial = device['SerialNumber']
             asset_tag = device['CopyBarcode']
-            meraki.updatedevice(meraki_config["api_key"],network_id,serial,notes=f"Asset: {asset_tag}")
+            meraki.updatedevice(meraki_config["api_key"],network_id,serial,notes=f"Asset: {asset_tag}",suppressprint=True)
 def main():
     network_ids = get_dashboard_network_ids()
     for network_id in network_ids:

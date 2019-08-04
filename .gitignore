@@ -35,5 +35,7 @@ wheels/
 *.manifest
 *.spec
 *.tar
+
 config.json
 *.log
+meraki.py
