@@ -1,4 +1,4 @@
-#!/usr/local/bin/python3
+#!/usr/bin/env python3
 '''
 Set Notes field of Meraki devices for a given Dashboard organization to asset tag as pulled from Follett Destiny
 '''
@@ -42,21 +42,28 @@ except IOError:
     sys.exit(2)
 
 meraki_config = settings['meraki_dashboard']
+destiny_config = settings['server_info']
 
-def get_serials_from_dashboard():
-
-    serials=[]
+def get_dashboard_network_ids():
+    network_ids=[]
     networks = meraki.getnetworklist(meraki_config["api_key"], meraki_config["org_id"],suppressprint=True)
     hw_networks = [net for net in networks if net['type'] != "systems manager"]
     for network in hw_networks:
-        devices = meraki.getnetworkdevices(meraki_config["api_key"],network['id'],suppressprint=True)
-        for device in devices:
-            serials.append(device['serial'])
+        network_ids.append(network['id'])
+    return network_ids
+
+def get_serials_from_dashboard(network_id):
+    serials=[]
+    devices = meraki.getnetworkdevices(meraki_config["api_key"],network_id,suppressprint=True)
+    for device in devices:
+        serials.append(device['serial'])
     return serials
 
 def get_device_data(serials, host, user, password, db):
-
-    barcode_cmd = "SELECT SerialNumber, CopyBarcode FROM CircCatAdmin.CopyAssetView WHERE SerialNumber IN {}".format(tuple(serials))
+    if len(serials) == 1:
+        barcode_cmd = "SELECT SerialNumber, CopyBarcode FROM CircCatAdmin.CopyAssetView WHERE SerialNumber = '{0}'".format(serials[0])
+    else:
+        barcode_cmd = "SELECT SerialNumber, CopyBarcode FROM CircCatAdmin.CopyAssetView WHERE SerialNumber IN {}".format(tuple(serials))
 
     db_host = host
     db_user = user
@@ -80,29 +87,29 @@ def get_device_data(serials, host, user, password, db):
 
     return devicedata
 
-def write_to_meraki(data):
-    for device in data:
-        serial = device['SerialNumber']
-        asset_tag = device['CopyBarcode']
-        print(serial, asset_tag,"")
-
+def write_to_meraki(network_id, data):
+    if data:
+        for device in data:
+            serial = device['SerialNumber']
+            asset_tag = device['CopyBarcode']
+            meraki.updatedevice(meraki_config["api_key"],network_id,serial,notes=f"Asset: {asset_tag}")
 def main():
-        serials = get_serials_from_dashboard()
+    network_ids = get_dashboard_network_ids()
+    for network_id in network_ids:
+        data = {}
+        serials = get_serials_from_dashboard(network_id)
+        if serials != []:
+            data = get_device_data(serials,
+                                   destiny_config["server"],
+                                   destiny_config["user"],
+                                   destiny_config["password"],
+                                   destiny_config["database"])
 
-        server_settings = settings["server_info"]
-        data = get_device_data(serials,
-                               server_settings["server"],
-                               server_settings["user"],
-                               server_settings["password"],
-                               server_settings["database"])
+            logging.debug("Got device data from server!\n%s", data)
+            if data is None:
+                logging.error("No data")
+        write_to_meraki(network_id,data)
 
-        logging.debug("Got device data from server!\n%s", data)
-        if data is None:
-            logging.error("No data")
-
-        write_to_meraki(data)
-
-
-        sys.exit(0)
+    sys.exit(0)
 if __name__ == '__main__':
     main()
