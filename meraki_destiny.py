@@ -9,6 +9,7 @@ import subprocess
 import logging
 import os.path
 import sys
+import re
 # Custom Imports
 import pytds
 import meraki
@@ -47,6 +48,9 @@ except IOError:
 meraki_config = settings['meraki_dashboard']
 destiny_config = settings['server_info']
 
+# Set up regular expression for asset tag
+re_tag = re.compile('Asset: \d{6}')
+
 def get_dashboard_network_ids():
     network_ids=[]
     networks = meraki.getnetworklist(meraki_config["api_key"], meraki_config["org_id"],suppressprint=True)
@@ -59,7 +63,10 @@ def get_serials_from_dashboard(network_id):
     serials=[]
     devices = meraki.getnetworkdevices(meraki_config["api_key"],network_id,suppressprint=True)
     for device in devices:
-        serials.append(device['serial'])
+        if not 'notes' in device:
+            serials.append(device['serial'])
+        elif not re_tag.match(device['notes']):
+            serials.append(device['serial'])
     return serials
 
 def get_device_data(serials, host, user, password, db):
@@ -93,7 +100,7 @@ def get_device_data(serials, host, user, password, db):
 def write_to_meraki(network_id, data):
     if data:
         for device in data:
-            serial = device['SerialNumber']
+            serial = device['SerialNumber'].upper()
             asset_tag = device['CopyBarcode']
             meraki.updatedevice(meraki_config["api_key"],network_id,serial,notes=f"Asset: {asset_tag}",suppressprint=True)
             logging.info(f"Device updated: {serial} – {asset_tag} ")
@@ -102,6 +109,7 @@ def main():
     for network_id in network_ids:
         data = {}
         serials = get_serials_from_dashboard(network_id)
+
         if serials != []:
             data = get_device_data(serials,
                                    destiny_config["server"],
