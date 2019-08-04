@@ -23,6 +23,8 @@ parser.add_argument("--config",
                     default=os.path.join(sys.path[0],"config.json"))
 
 args = parser.parse_args()
+
+# Set up logging
 level = logging.INFO
 if args.debug:
     level = logging.DEBUG
@@ -41,6 +43,7 @@ except IOError:
     logging.error("No config.json file found! Please create one!")
     sys.exit(2)
 
+# Read in config
 meraki_config = settings['meraki_dashboard']
 destiny_config = settings['server_info']
 
@@ -93,6 +96,7 @@ def write_to_meraki(network_id, data):
             serial = device['SerialNumber']
             asset_tag = device['CopyBarcode']
             meraki.updatedevice(meraki_config["api_key"],network_id,serial,notes=f"Asset: {asset_tag}",suppressprint=True)
+            logging.info(f"Device updated: {serial} – {asset_tag} ")
 def main():
     network_ids = get_dashboard_network_ids()
     for network_id in network_ids:
