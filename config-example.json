@@ -1,0 +1,12 @@
+{
+	"server_info": {
+		"server": "DESTINYSQLSERVER.DOMAIN.TLD",
+		"user": "READONLYUSER",
+		"password": "READONLYPASSWORD",
+		"database": "destiny"
+	},
+	"meraki_dashboard": {
+		"api_key": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+		"org_id": "XXXXX"
+	}
+}
