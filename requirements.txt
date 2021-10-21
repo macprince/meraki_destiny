@@ -1,0 +1,15 @@
+aiohttp
+async-timeout
+attrs
+certifi
+chardet
+charset-normalizer
+idna
+meraki
+multidict
+python-tds
+requests
+six
+typing-extensions
+urllib3
+yarl

@@ -36,6 +36,7 @@ wheels/
 *.spec
 *.tar
 
+venv/
 config.json
 *.log
 meraki.py
